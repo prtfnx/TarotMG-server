@@ -26,7 +26,9 @@ try:
         try:
             sock.get_data()
         except:
-            sock.send_string("test")
+            sock.send_data(b"test")
         finally:
             sock.connection.close()
+finally:
+    sock.close()
 
