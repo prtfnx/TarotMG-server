@@ -1,4 +1,6 @@
 import socket
+from CardClass import Card
+from DeckClass import Deck
 """
 Класс TCPserver описывает структуру tcp сервера
 и методы вщаимодействия с ним
@@ -24,23 +26,23 @@ class TCPServer:
         #   теоретически, у нас будет какое-то число вариаций запросов от пользователя
         #   и мы сможем все их отрабатывать
         command_type = int.from_bytes(self.socket.recv(4), "little")
-        # Допустим, если мы приняли 0, то клиент хочет закрыть соединение
+        # 0 - закрыть соединение
         if command_type == 0:
             self.close()
-        # 1 - что-то другое
+        # 1 - создать колоду
         elif command_type == 1:
-            self.close()
-        # И так далее
-        elif command_type == 2:
-            self.close()
-            # close тут для примера прост висит, но в реальности,
-            # в зависиммости от того что от нас хочет клиент
-            # он будет высылать разные пакеты данных и обрабатывать
-            # их нужно будет по-разному
-        elif command_type == 3:
-            self.close()
-        elif command_type == 4:
-            self.close()
+            # получаем тип колоды, которую хочет создать клиент
+            # 1 - тота, 2 - райдер, 3 - марсельское
+            deck_type = int.from_bytes(self.socket.recv(4), "little")
+            deck_name = "toth"
+            if deck_type == 1:
+                deck_name = "toth"
+            elif deck_type == 2:
+                deck_name = "waite"
+            elif deck_type == 3:
+                deck_name = "marsele"
+            deck = Deck(deck_name)
+            print("Колода создана: " + deck.show())
     # Метод отправки данных клиенту
     def send_data(self, data):
         data = b""
