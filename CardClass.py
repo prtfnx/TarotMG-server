@@ -1,12 +1,10 @@
 """
 Класс Card описывает структуру карты
-и методы вщаимодействия с ней
+и методы взаимодействия с ней
 """
 class Card:
     # конструктор
-    def __init__(self, name, user):
+    def __init__(self, name):
         self.name = name
-        self.user = user
-    # методы
     def show(self):
-        return "Card name is: '" + self.name + "'"
+        print("Card name: " + self.name)

@@ -3,7 +3,7 @@ from CardClass import Card
 from DeckClass import Deck
 """
 Класс TCPserver описывает структуру tcp сервера
-и методы вщаимодействия с ним
+и методы взаимодействия с ним
 """
 class TCPServer:
     # конструктор
@@ -41,7 +41,7 @@ class TCPServer:
                 deck_name = "waite"
             elif deck_type == 3:
                 deck_name = "marsele"
-            deck = Deck(deck_name)
+            deck = Deck(deck_name, client_id)
             print("Колода создана: " + deck.show())
     # Метод отправки данных клиенту
     def send_data(self, data):
