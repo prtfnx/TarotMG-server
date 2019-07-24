@@ -1,5 +1,6 @@
-from TCPServerClass import TCPServer
+#from TCPServerClass import TCPServer
 from DeckClass import Deck
+from SQLiteClass import SQLite
 
 '''
 sock = TCPServer("", 13666)
@@ -21,5 +22,12 @@ finally:
 
 deck = Deck("thoth", 1)
 deck.create()
-deck.delete()
+deck.select("thoth")
 
+sqlite = SQLite()
+sqlite.connect()
+if (sqlite.is_deck_exist("thoth", 1)):
+    print("exist")
+else:
+    print("not exist")
+sqlite.disconnect()

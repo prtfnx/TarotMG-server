@@ -4,7 +4,7 @@
 """
 class Card:
     # конструктор
-    def __init__(self, name):
+    def __init__(self, name, position = 0):
         self.name = name
-    def show(self):
-        print("Card name: " + self.name)
+        self.position = position
+

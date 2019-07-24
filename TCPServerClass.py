@@ -1,6 +1,5 @@
 import socket
-from CardClass import Card
-from DeckClass import Deck
+
 """
 Класс TCPserver описывает структуру tcp сервера
 и методы взаимодействия с ним
