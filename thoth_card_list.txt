@@ -4,7 +4,7 @@ Toth_Priestess_02
 Toth_Empress_03
 Toth_Emperor_04
 Toth_Hierophant_05
-Toth_Lovers _06
+Toth_Lovers_06
 Toth_Chariot_07
 Toth_Adjustment_08
 Toth_Hermit_09
