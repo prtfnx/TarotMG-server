@@ -9,6 +9,8 @@ from CardShuffle import card_shuffle
 Class Deck describe structure of deck 
 and methods to operate with it
 """
+
+
 class Deck:
     sqlite = SQLite()
     # конструктор
@@ -25,8 +27,8 @@ class Deck:
             deck_name = self.name
         file_name = get_list_of_cards(deck_name)
         with open(file_name) as file:
-            for index,line in enumerate(file):
-                self.card_list.append(Card(line,random_id,index,))
+            for position,line in enumerate(file):
+                self.card_list.append(Card(line,position,random_id))
 
 
     def shuffle(self):
