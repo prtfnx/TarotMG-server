@@ -4,6 +4,7 @@ import string
 from SQLiteClass import SQLite
 from DeckList import get_list_of_cards
 from CardClass import Card
+from CardShuffle import card_shuffle
 """
 Class Deck describe structure of deck 
 and methods to operate with it
@@ -26,10 +27,12 @@ class Deck:
         with open(file_name) as file:
             for index,line in enumerate(file):
                 self.card_list.append(Card(line,random_id,index,))
-        
-    def sort(self):
-        # sort deck randomly
-        pass  #TODO
+
+
+    def shuffle(self):
+        # shuffle deck randomly
+        card_shuffle(self.card_list)
+
 
     def get_card(self,position):
         # take one card by position 
@@ -42,6 +45,8 @@ class Deck:
         #self.sqlite.connect()
         #self.sqlite.delete_deck(self.name, self.client_id)
         #self.sqlite.disconnect()
+
+
     def select(self, deck_name = ""):
         # load deck from database 
         self.card_list=SQlite.get_list_of_cards
@@ -51,4 +56,3 @@ class Deck:
         #self.sqlite.connect()
         #self.card_list = self.sqlite.select_deck(deck_name, self.client_id, True)
         #self.sqlite.disconnect()
-

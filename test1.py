@@ -6,7 +6,7 @@ def deck_create_test():
     new_deck=Deck('thoth',1)
     new_deck.create()
     second_card=new_deck.card_list[1]
-    print(new_deck.get_card(2).name)
+    return new_deck
 
 
 def shuffle_test():
@@ -23,5 +23,10 @@ def shuffle_test():
         result.append(card.name)
     print(','.join(result))
 
+def get_card_test():
+    test_deck=deck_create_test()
+    test_deck.shuffle()
+    card=test_deck.get_card(4)
+    print(card.name)
 
-shuffle_test()
+get_card_test()
