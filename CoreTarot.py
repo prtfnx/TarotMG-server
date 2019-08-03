@@ -17,19 +17,20 @@ class Tarot:
 
     # TODO maybe need to full login authetication process
 
-    def sign_user(self,user_name)
+    def sign_user(self,user_name):
         pass
 
     def create_new_deck(self, deck_name, user_id):
         new_deck = Deck(deck_name, user_id)
-        return new_deck.create()
+        new_deck.create()
+        return new_deck
 
     def load_deck(self, deck_name, user_id):
         sqlite = SQLite()
         new_deck = sqlite.select_deck(deck_name, user_id)
         return new_deck
 
-    def save_deck(self, deck,():
+    def save_deck(self, deck):
         sqlite = SQLite()
         sqlite.save_deck(deck)
         return 1
