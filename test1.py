@@ -3,6 +3,7 @@ from CardShuffle import card_shuffle
 from CardClass import Card
 from SQLiteClass import SQLite
 
+
 def deck_create_test():
     new_deck = Deck('thoth', 380)
     new_deck.create()
@@ -24,16 +25,15 @@ def shuffle_test():
         result.append(card.name)
     print(','.join(result))
 
+
 def get_card_test():
     test_deck = deck_create_test()
     test_deck.shuffle()
     card = test_deck.get_card(4)
     print(card.name)
-    
 
 
-def sql_test():
-    
+def sql_test(): 
     deck = deck_create_test()
     sqlite = SQLite()
     sqlite.save_deck(deck)
@@ -43,5 +43,5 @@ def sql_test():
     new_new_deck=sqlite.select_deck('thoth',380)
     card = new_deck.get_card(4)
     print(card.name)
-    print(card.position)
+    
 sql_test()

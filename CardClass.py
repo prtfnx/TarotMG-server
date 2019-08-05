@@ -6,7 +6,7 @@
 
 class Card:
 # конструктор
-    def __init__(self, name, position,random_id ):
+    def __init__(self, name, position, random_id):
         self.name = name
         self.position = position
         self.random_id = random_id

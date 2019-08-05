@@ -1,7 +1,7 @@
 import random
 
 
-NUMBER_OF_SHUFFLE = 15  # TODO Maybe replace it 
+NUMBER_OF_SHUFFLE = 15  # TODO Maybe replace it
 NUMBER_OF_CARDS = 78   # to setting file
 
 
@@ -26,10 +26,6 @@ def card_shuffle(card_list):
         while len(hand) != 0:  # will shuffle until we have cards in hand
             rand2 = random.randint(1, len(hand))  # choose part of parted cards
             index = random.randint(0, len(card_list))  # position to insert cards
-            #print('length of hand and deck')
-            #print(len(hand),len(card_list))
-            #print('index and part of hand')
-            #print(index,rand2)
             for card in hand[0:rand2]:  # insert random part of cards in hand to random position in deck
                 card_list.insert(index, card)  # insert card
                 index += 1  # change position to next
