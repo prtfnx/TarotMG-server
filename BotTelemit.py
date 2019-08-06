@@ -4,6 +4,7 @@ import random
 import CoreTarot
 import logging
 import datetime
+import settings
 
 # For log
 logging.basicConfig(level=logging.DEBUG,
@@ -62,7 +63,7 @@ def set_of_cards(update, context):
 
 
 def main():
-    updater = Updater(token="", use_context=True)  # Token API to Telegram
+    updater = Updater(settings.token, use_context=True)  # Token API to Telegram
     dp = updater.dispatcher
     # Handlers
     start_command_handler = CommandHandler('start', start_command)

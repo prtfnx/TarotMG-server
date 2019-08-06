@@ -1,6 +1,3 @@
-import random
-import string
-
 from SQLiteClass import SQLite
 from DeckList import get_list_of_cards
 from CardClass import Card
@@ -12,16 +9,15 @@ and methods to operate with it
 
 
 class Deck:
-    sqlite = SQLite()
-    # конструктор
 
-    def __init__(self, name, client_id):
+    def __init__(self, name, user_id):
+        """Constructor"""
         self.name = name.lower()
-        self.client_id = client_id
+        self.user_id = user_id
         self.card_list = []
 
     def create(self, deck_name=""):
-        # make new deck with all cards
+        """Make new deck with all cards"""
         random_id = 1  # TODO
         if (deck_name == ""):
             deck_name = self.name
@@ -31,16 +27,18 @@ class Deck:
                 self.card_list.append(Card(line, position, random_id))
 
     def shuffle(self):
-        # shuffle deck randomly
+        """Shuffle deck randomly"""
         card_shuffle(self.card_list)
 
     def get_card(self, position):
-        # take one card by position
+        """Take one card by position"""
         return self.card_list[position]
 
     def delete(self):
+        """ Delete deck from database"""
         self.card_list = []
+        SQLite.delete_deck(self.name, self.user_id)
 
     def select(self, deck_name=""):
-        # load deck from database
+        """Load deck from database"""
         self.card_list = SQlite.get_list_of_cards

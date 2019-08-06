@@ -1,10 +1,5 @@
 import random
-
-
-NUMBER_OF_SHUFFLE = 15  # TODO Maybe replace it
-NUMBER_OF_CARDS = 78   # to setting file
-
-
+import settings
 """
 Shuffle cards in deck
 """
@@ -19,10 +14,10 @@ def card_shuffle(card_list):
     And then randomly insert part of it to deck
     Like in real life shuffling
     """
-    for card in range(NUMBER_OF_SHUFFLE):
+    for card in range(settings.NUMBER_OF_SHUFFLE):
         rand1 = random.randint(30, 77)  # which part of deck from end we will take to hand
-        hand = card_list[rand1:NUMBER_OF_CARDS]  # take part of cards from end
-        card_list[rand1:NUMBER_OF_CARDS] = []  # clear it from deck
+        hand = card_list[rand1:settings.NUMBER_OF_CARDS]  # take part of cards from end
+        card_list[rand1:settings.NUMBER_OF_CARDS] = []  # clear it from deck
         while len(hand) != 0:  # will shuffle until we have cards in hand
             rand2 = random.randint(1, len(hand))  # choose part of parted cards
             index = random.randint(0, len(card_list))  # position to insert cards
