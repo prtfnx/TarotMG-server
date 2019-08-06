@@ -1,69 +1,113 @@
 import sqlite3
 import os.path
-
+import DeckClass
 from CardClass import Card
+"""
+Class that make connection with database
+And operate with it
+"""
+
 
 class SQLite:
-    def __init__(self, db_name = 'tarotmg.db'):
+
+    def __init__(self, db_name='tarotmg.db'):
+        """Constructer"""
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         self.db_name = os.path.join(BASE_DIR, db_name)
-    def connect(self):
-        self.connection = sqlite3.connect(self.db_name)
-    def disconnect(self):
-        self.connection.close()
-    def is_deck_exist(self, name, user_id):
-        cursor = self.connection.cursor()
-        keys = (name, user_id,)
-        result = cursor.execute('SELECT count(*) FROM deck WHERE (name = ? AND user_id = ?)', keys)
-        return (result.fetchone()[0] > 0)
 
-    def create_deck(self, name, user_id):
-        if (self.is_deck_exist(name, user_id) == False):
-            cursor = self.connection.cursor()
+    def connect(self):
+        """Connect to database"""
+        # Maybe that is not optimal
+        try:
+            self.connection = sqlite3.connect(self.db_name)
+        except sqlite3.Error as e:
+            print(e)
+
+    def is_deck_exist(self, name, user_id):
+        """Check for existence of deck in database"""
+        conn = self.connection
+        with conn:
+            cursor = conn.cursor()
             keys = (name, user_id,)
-            # Создаем колоду для пользователя        
-            cursor.execute('INSERT INTO deck (name, user_id) VALUES (?, ?)', keys)
+            result = cursor.execute(
+                'SELECT count(*) FROM Decks WHERE (name = ? AND user_id = ?)', keys)
+            return (result.fetchone()[0] > 0)
+
+    def save_deck(self, deck):
+        """Save deck to database"""
+        user_id = deck.user_id
+        self.connect()
+        conn = self.connection  # Maybe is not optimal
+        # Some mess with safe connection and statement "with"
+        if self.is_deck_exist(deck.name, user_id):
+            # check if deck alredy existence
+            self.update_deck(deck, user_id)
+            return
+        with conn:
+            cursor = conn.cursor()
+            keys = (deck.name, user_id,)
+            # save deck
+            cursor.execute(
+                'INSERT INTO Decks (name, user_id) VALUES (?, ?)', keys)
             deck_id = cursor.lastrowid
-            cards = []
-            if (name == "thoth"):
-                cards = [
-                    ("fool", deck_id),
-                    ("magus", deck_id),
-                    ("priestess", deck_id),
-                ]
-            # Создаем карты пользователя
-            cursor.executemany('INSERT INTO card (name, deck_id) VALUES (?, ?)', cards)
-            self.connection.commit()
-    def delete_deck(self, name, user_id):
-        if (self.is_deck_exist(name, user_id) == True):
-            cursor = self.connection.cursor()
-            keys = (name, user_id,)
-            cursor.execute('SELECT id FROM deck WHERE (name = ? AND user_id = ?)', keys)
-            deck_id = cursor.fetchone()
-            # Удаляем колоду
-            cursor.execute('DELETE FROM deck WHERE (name = ? AND user_id = ?)', keys)
-            # Удаляем все карты из нее
-            cursor.execute('DELETE FROM card WHERE deck_id = ?', deck_id)
-            self.connection.commit()
-    def select_deck(self, name, user_id, card_list_only = False):
-        if (self.is_deck_exist(name, user_id) == True):
-            cursor = self.connection.cursor()
-            keys = (name, user_id,)
-            cursor.execute('SELECT id FROM deck WHERE (name = ? AND user_id = ?)', keys)
-            deck_id = cursor.fetchone()
-            cursor.execute('SELECT name, position FROM card WHERE deck_id = ?', deck_id)
-            card_rows = cursor.fetchall()
-            card_list = []
-            for c in card_rows:
-                card = Card(c[0], c[1])
-                card_list.append(card)
-            if (card_list_only):
-                return card_list
-            else:
-                deck = Deck(name, user_id)
+            cards = deck.card_list
+            # generator for unpack name,position and random data from card
+            rows_gen = ([deck_id, c.name, c.position, c.random_id]
+                        for c in cards)
+            # save cards
+            cursor.executemany(
+                'INSERT INTO Cards (deck_id, name, position, random_id) VALUES (?, ?, ?,?)', rows_gen)
+
+    def update_deck(self, deck, user_id):
+        """Update deck, exucated if deck already exist"""
+        conn = self.connection
+        with conn:
+            cursor = conn.cursor()
+            keys = (deck.name, user_id,)
+            # all operations analogy to save_deck
+            cursor.execute(
+                'SELECT id FROM Decks WHERE (name = ? AND user_id = ?)', keys)
+            deck_id = cursor.fetchone()[0]
+            cards = deck.card_list
+            rows_gen = ([c.position, deck_id, c.name] for c in cards)
+            cursor.executemany(
+                'UPDATE Cards SET position=? WHERE (deck_id = ? AND name= ?)', rows_gen)
+
+    def select_deck(self, name, user_id,):
+        """Load deck from database"""
+        self.connect()
+        conn = self.connection
+        # Check for existence of deck, TODO for not
+        if (self.is_deck_exist(name, user_id)):
+            with conn:
+                cursor = self.connection.cursor()
+                keys = (name, user_id,)
+                cursor.execute(
+                    'SELECT id FROM Decks WHERE (name = ? AND user_id = ?)', keys)
+                deck_id = cursor.fetchone()
+                cursor.execute(
+                    'SELECT name, position, random_id FROM Cards WHERE deck_id = ?', deck_id)
+                card_rows = cursor.fetchall()
+                card_list = []
+                # Unpacking cards
+                for card_name, card_position, card_random_id in card_rows:
+                    card = Card(card_name, card_position, card_random_id)
+                    card_list.append(card)
+                deck = DeckClass.Deck(name, user_id)
                 deck.card_list = card_list
                 return deck
-        else:
-            self.create_deck(name, user_id)
-            self.select_deck(name, user_id, card_list_only)
 
+    def delete_deck(self, name, user_id):
+        """Delete deck from database"""
+        if self.is_deck_exist(name, user_id):
+            with conn:
+                cursor = self.connection.cursor()
+                keys = (name, user_id,)
+                cursor.execute(
+                    'SELECT id FROM deck WHERE (name = ? AND user_id = ?)', keys)
+            deck_id = cursor.fetchone()
+            # Delete deck
+            cursor.execute('DELETE FROM deck WHERE (name = ? AND user_id = ?)', keys)
+            # Delete all cards
+            cursor.execute('DELETE FROM card WHERE deck_id = ?', deck_id)
+            self.connection.commit()
