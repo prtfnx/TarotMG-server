@@ -48,8 +48,7 @@ class Tarot:
 
     def save_deck(self, deck):
         sqlite = SQLite()
-        sqlite.save_deck(deck)
-        return 1
+        return sqlite.save_deck(deck)
     
     def delete_deck(self, deck):
         pass
