@@ -1,5 +1,5 @@
 from SQLiteClass import SQLite
-from DeckList import get_list_of_cards
+from DeckList import get_list_of_cards, get_list_of_pathes
 from CardClass import Card
 from CardShuffle import card_shuffle
 """
@@ -21,10 +21,14 @@ class Deck:
         random_id = 1  # TODO
         if (deck_name == ""):
             deck_name = self.name
+        # forming cards
         file_name = get_list_of_cards(deck_name)
+        pathes = get_list_of_pathes(deck_name)
         with open(file_name) as file:
-            for position, line in enumerate(file):
-                self.card_list.append(Card(line, position, random_id))
+            for (line, path) in zip(enumerate(file), pathes):
+                position, name = line[0], line[1]   # workaround TODO
+                # some problems with multiple unpacking
+                self.card_list.append(Card(name, position, random_id, path))
 
     def shuffle(self):
         """Shuffle deck randomly"""

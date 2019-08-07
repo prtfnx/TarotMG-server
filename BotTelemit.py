@@ -48,6 +48,7 @@ def one_card(update, context):
     deck = tarot.load_deck(deck_name, user_id)
     card = deck.get_card(position)
     update.message.reply_text(card.name)
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=open(card.path_to_image, 'rb'))
 
 
 def set_of_cards(update, context):
@@ -60,6 +61,7 @@ def set_of_cards(update, context):
     for i in range(4):
         card = deck.get_card(position[i])
         update.message.reply_text(card.name)
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=open(card.path_to_image, 'rb'))
 
 
 def main():
