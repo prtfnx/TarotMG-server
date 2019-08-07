@@ -36,6 +36,15 @@ def load_deck(update, context):
     pass
 
 
+def user_decks(update):
+    user_id = update.message.from_user.id
+    user_name = update.message.from_user.name
+    tarot = CoreTarot.Tarot(user_name, user_id)
+    decks = tarot.get_decks(user_id)
+    decks_string = ', '.join([str(deck) for deck in decks])
+    update.message.reply_text('Твои колоды, сучка: ' + decks_string)
+
+
 def one_card(update, context):
     user_id = update.message.from_user.id
     user_name = update.message.from_user.name
