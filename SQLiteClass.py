@@ -40,7 +40,7 @@ class SQLite:
         conn = self.connection  # Maybe is not optimal
         # Some mess with safe connection and statement "with"
         if self.is_deck_exist(deck.name, user_id):
-            # check if deck alredy existence
+            # check if deck alredy exist
             self.update_deck(deck, user_id)
             return
         with conn:
@@ -52,11 +52,11 @@ class SQLite:
             deck_id = cursor.lastrowid
             cards = deck.card_list
             # generator for unpack name,position and random data from card
-            rows_gen = ([deck_id, c.name, c.position, c.random_id]
+            rows_gen = ([deck_id, c.name, c.position, c.random_id, c.path_to_image]
                         for c in cards)
             # save cards
             cursor.executemany(
-                'INSERT INTO Cards (deck_id, name, position, random_id) VALUES (?, ?, ?,?)', rows_gen)
+                'INSERT INTO Cards (deck_id, name, position, random_id, path_to_image) VALUES (?, ?, ?,?,?)', rows_gen)
 
     def update_deck(self, deck, user_id):
         """Update deck, exucated if deck already exist"""
@@ -86,12 +86,12 @@ class SQLite:
                     'SELECT id FROM Decks WHERE (name = ? AND user_id = ?)', keys)
                 deck_id = cursor.fetchone()
                 cursor.execute(
-                    'SELECT name, position, random_id FROM Cards WHERE deck_id = ?', deck_id)
+                    'SELECT name, position, random_id, path_to_image FROM Cards WHERE deck_id = ?', deck_id)
                 card_rows = cursor.fetchall()
                 card_list = []
                 # Unpacking cards
-                for card_name, card_position, card_random_id in card_rows:
-                    card = Card(card_name, card_position, card_random_id)
+                for c_name, c_position, c_random_id, c_path_to_image in card_rows:
+                    card = Card(c_name, c_position, c_random_id, c_path_to_image)
                     card_list.append(card)
                 deck = DeckClass.Deck(name, user_id)
                 deck.card_list = card_list

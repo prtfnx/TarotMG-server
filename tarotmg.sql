@@ -13,6 +13,8 @@ CREATE TABLE 'Cards' (
 	'name'	TEXT NOT NULL,
 	'deck_id'	INTEGER NOT NULL,
 	'random_id' INTEGER NOT NULL,
-	'position'	INTEGER DEFAULT 0
+	'position'	INTEGER NOT NULL,
+	'path_to_image'  TEXT NOT NULL
+
 );
 COMMIT;
