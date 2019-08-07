@@ -1,10 +1,13 @@
 """
-Класс Card описывает структуру карты
-и методы взаимодействия с ней
+Class Card describe structure of card
+And methods to opearate with them
 """
+
+
 class Card:
-    # конструктор
-    def __init__(self, name, position = 0):
+    def __init__(self, name, position, random_id, path_to_image):
+        """Constructer"""
         self.name = name
         self.position = position
-
+        self.random_id = random_id
+        self.path_to_image = path_to_image
