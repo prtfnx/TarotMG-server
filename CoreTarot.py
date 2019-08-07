@@ -48,11 +48,30 @@ class Tarot:
 
     def save_deck(self, deck):
         sqlite = SQLite()
-        sqlite.save_deck(deck)
-        return 1
+        return sqlite.save_deck(deck)
     
     def delete_deck(self, deck):
         pass
     
     def shuffle_deck(self, deck):
         pass
+
+    def get_decks(self, user_id):
+        decks = []
+        counter = 0
+        sqlite = SQLite()
+        if (sqlite.is_deck_exist("thoth")):
+            decks.append('THOTH')
+            counter += 1
+        if (sqlite.is_deck_exist("rw")):
+            decks.append('Rider Waite')
+            counter += 1
+        if (sqlite.is_deck_exist("mr")):
+            decks.append('Marseilles')
+            counter += 1
+
+        if (counter == 0):
+            decks.append('нихуя нету')
+
+        return decks
+

@@ -38,6 +38,15 @@ def load_deck(update, context):
     pass
 
 
+def user_decks(update):
+    user_id = update.message.from_user.id
+    user_name = update.message.from_user.name
+    tarot = CoreTarot.Tarot(user_name, user_id)
+    decks = tarot.get_decks(user_id)
+    decks_string = ', '.join([str(deck) for deck in decks])
+    update.message.reply_text('Твои колоды, сучка: ' + decks_string)
+
+
 def one_card(update, context):
     user_id = update.message.from_user.id
     user_name = update.message.from_user.name
@@ -88,11 +97,13 @@ def main():
     # Handlers
     start_command_handler = CommandHandler('start', start_command)
     create_deck_command_handler = CommandHandler('create_deck', create_deck)
+    user_decks_command_handler = CommandHandler('user_decks', user_decks)
     one_card_command_handler = CommandHandler('one_card', one_card)
     set_of_cards_command_handler = CommandHandler('set_of_cards', set_of_cards)
     # Add handlers to dispatcher
     dp.add_handler(start_command_handler)
     dp.add_handler(create_deck_command_handler)
+    dp.add_handler(user_decks_command_handler)
     dp.add_handler(one_card_command_handler)
     dp.add_handler(set_of_cards_command_handler)
     # Start seek for update
