@@ -1,10 +1,12 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, InlineQueryHandler, BaseFilter
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from io import BytesIO
 import random
 import CoreTarot
 import logging
 import datetime
 import settings
+import ImageProcessing
 
 # For log
 logging.basicConfig(level=logging.DEBUG,
@@ -47,21 +49,37 @@ def one_card(update, context):
     tarot = CoreTarot.Tarot(user_name, user_id)
     deck = tarot.load_deck(deck_name, user_id)
     card = deck.get_card(position)
-    update.message.reply_text(card.name)
+    text = ' '.join(card.name.split('_'))
+    update.message.reply_text(text)
     context.bot.send_photo(chat_id=update.message.chat_id, photo=open(card.path_to_image, 'rb'))
 
 
 def set_of_cards(update, context):
     user_id = update.message.from_user.id
     user_name = update.message.from_user.name
+    chat_id=update.message.chat_id
     deck_name = context.args[0]
     position = random.sample(range(0, 77), 4)
     tarot = CoreTarot.Tarot(user_name, user_id)
     deck = tarot.load_deck(deck_name, user_id)
-    for i in range(4):
-        card = deck.get_card(position[i])
-        update.message.reply_text(card.name)
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=open(card.path_to_image, 'rb'))
+    reply = []
+    path_list = []
+    for i in range(4):  # form answer
+        card = deck.get_card(position[i]) # take cards
+        reply.append(' '.join(card.name.split('_'))) # form answer
+        path_list.append(card.path_to_image)
+    update.message.reply_text(''.join(reply))  #answer
+    image_set = ImageProcessing.square_set(path_list) # form image
+    send_image(image_set, context, chat_id)
+    
+
+def send_image(image, context, chat_id):
+    """Send image from memory"""
+    bio = BytesIO()
+    bio.name = 'image.jpeg'
+    image.save(bio, 'JPEG')
+    bio.seek(0)
+    context.bot.send_photo(chat_id, photo=bio)
 
 
 def main():
