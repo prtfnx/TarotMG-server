@@ -79,11 +79,13 @@ def main():
     # Handlers
     start_command_handler = CommandHandler('start', start_command)
     create_deck_command_handler = CommandHandler('create_deck', create_deck)
+    user_decks_command_handler = CommandHandler('user_decks', user_decks)
     one_card_command_handler = CommandHandler('one_card', one_card)
     set_of_cards_command_handler = CommandHandler('set_of_cards', set_of_cards)
     # Add handlers to dispatcher
     dp.add_handler(start_command_handler)
     dp.add_handler(create_deck_command_handler)
+    dp.add_handler(user_decks_command_handler)
     dp.add_handler(one_card_command_handler)
     dp.add_handler(set_of_cards_command_handler)
     # Start seek for update
