@@ -36,7 +36,7 @@ class Deck:
 
     def get_card(self, position):
         """Take one card by position"""
-        return self.card_list[position]
+        return self.card_list.pop(position)
 
     def delete(self):
         """ Delete deck from database"""

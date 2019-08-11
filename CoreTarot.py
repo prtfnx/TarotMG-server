@@ -1,3 +1,5 @@
+import asyncio
+import pickle
 from DeckClass import Deck
 from SQLiteClass import SQLite
 """
@@ -27,6 +29,8 @@ class Tarot:
         """Constructer"""
         self.user_name = user_name
         self.user_id = user_id
+        self.selected_deck = None
+        self.hand = []  # hand with cards
 
     def register_user(self, user_name, user_id):
         pass
@@ -36,25 +40,44 @@ class Tarot:
     def sign_user(self, user_name):
         pass
 
-    def create_new_deck(self, deck_name, user_id):
+    def create_new_deck(self, deck_name):
+        user_id = self.user_id
         new_deck = Deck(deck_name, user_id)
         new_deck.create()
-        return new_deck
+        self.selected_deck = new_deck
 
     def load_deck(self, deck_name, user_id):
         sqlite = SQLite()
         new_deck = sqlite.select_deck(deck_name, user_id)
-        return new_deck
+        self.selected_deck = new_deck
 
-    def save_deck(self, deck):
+    def save_deck(self):
+        deck = self.selected_deck
         sqlite = SQLite()
         return sqlite.save_deck(deck)
     
-    def delete_deck(self, deck):
-        pass
+    def delete_deck(self):
+        deck = self.selected_deck
+        sqlite = SQLite()
+        sqlite.delete_deck(deck.name, deck.user_id)
     
-    def shuffle_deck(self, deck):
-        pass
+    def shuffle_deck(self):
+        self.selected_deck.shuffle
+    
+    def put_from_hand_to_deck(self):
+        for _ in range(len(self.hand)):
+            self.selected_deck.card_list.append(hand.pop())
+
+    def get_cards(self, positions=[1]):
+        """Take cards from deck to hand."""
+        deck = self.selected_deck
+        hand = self.hand
+        for position in positions:
+            length_of_deck = len(deck.card_list)
+            if position > length_of_deck:
+                position = length_of_deck
+            hand.append(deck.get_card(position))
+        return hand
 
     def get_decks(self, user_id):
         decks = []
@@ -75,3 +98,72 @@ class Tarot:
 
         return decks
 
+
+async def handle_connection(reader, writer):
+    """Callback function on connection. Protocol:
+    Request:{
+        context:{
+            user_id: string 'user_id'
+            user_name: string 'user_name'
+            number_of_operations: int number_of_operations
+            from_app: string 'app_name'
+                }
+        operations: list string ['oper1', 'oper2'...[]
+        arguments: list list any [ [args1.1, arg1.2], [args2.1, args2.2],... ]
+        close_connection: bool True/False
+            }
+
+     Response:{
+        errors: list string [err1, err2, err3..] # one error to every operation from request
+        results: list any [res1, res2, res3..]   #
+              }
+    """
+    print('start recieving')
+    data = await reader.read(10000)
+    message = pickle.loads(data)
+    print(message)
+    user_id = message['context'].get('user_id')
+    user_name = message['context'].get('user_name')
+    core = Tarot(user_name, user_id)
+    results = []
+    errors = []
+    print('start manage operations')
+    for operation, arguments in zip(message['operations'], message['arguments']):
+        print(f'manage {operation}')
+        func = {
+            'create_new_deck': core.create_new_deck,
+            'load_deck': core.load_deck,
+            'save_deck': core.save_deck,
+            'delete_deck': core.delete_deck,
+            'shuffle_deck': core.shuffle_deck,
+            'get_cards': core.get_cards,
+            'get_decks': core.get_decks,
+            'put_from_hand_to_deck': core.put_from_hand_to_deck
+            }[operation]
+        print(f'managed {func}')  
+        results.append(func(*arguments))
+    response ={'errors': errors, 'results': results}
+    print(f'response:{response}')
+    message = pickle.dumps(response)
+    from pympler import asizeof # test
+    print(asizeof.asizeof(message) )# test
+    writer.write(message)
+    await writer.drain()
+    print("Close the connection")
+    writer.close()
+
+
+async def server():
+    server = await asyncio.start_server(
+        handle_connection, '127.0.0.1', 8888)
+    addr = server.sockets[0].getsockname()
+    print(f'Serving on {addr}')
+    async with server:
+        await server.serve_forever()
+
+
+def main():
+    asyncio.run(server())
+
+if __name__ == '__main__':
+    main()
