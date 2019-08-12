@@ -3,7 +3,7 @@ from CardShuffle import card_shuffle
 from CardClass import Card
 from SQLiteClass import SQLite
 from ImageProcessing import square_set
-
+from CoreTarot import Tarot
 def deck_create_test():
     new_deck = Deck('thoth', 33333)
     new_deck.create()
@@ -70,5 +70,16 @@ def image_test():
         image_set.paste(image, box)
     image_set.save('test.jpg')
     return image_set
-    
-sql_test()
+def sss(core):
+    return core.get_cards([4])
+
+def test_get_cards():
+    core = Tarot('232',22222)
+    core.create_new_deck('thoth')
+    for _ in range(3):
+        #card=core.get_cards([4])
+        card=sss(core)
+        for car in card:
+            print(car.name)
+        core.put_from_hand_to_deck()
+test_get_cards()

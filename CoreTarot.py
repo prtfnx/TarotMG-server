@@ -52,10 +52,9 @@ class Tarot:
         self.selected_deck = new_deck
 
     def save_deck(self):
-        deck = self.selected_deck
         sqlite = SQLite()
-        return sqlite.save_deck(deck)
-    
+        return sqlite.save_deck(self.selected_deck)
+        
     def delete_deck(self):
         deck = self.selected_deck
         sqlite = SQLite()
@@ -66,18 +65,16 @@ class Tarot:
     
     def put_from_hand_to_deck(self):
         for _ in range(len(self.hand)):
-            self.selected_deck.card_list.append(hand.pop())
+            self.selected_deck.card_list.append(self.hand.pop())
 
     def get_cards(self, positions=[1]):
         """Take cards from deck to hand."""
-        deck = self.selected_deck
-        hand = self.hand
         for position in positions:
-            length_of_deck = len(deck.card_list)
+            length_of_deck = len(self.selected_deck.card_list)
             if position > length_of_deck:
                 position = length_of_deck
-            hand.append(deck.get_card(position))
-        return hand
+            self.hand.append(self.selected_deck.get_card(position))
+        return self.hand
 
     def get_decks(self, user_id):
         decks = []
@@ -98,6 +95,24 @@ class Tarot:
 
         return decks
 
+def run_stuff(core, operation, arguments):
+    results = []
+    errors = []  # TODO
+    for operation, argument in zip(operation, arguments):
+        print(f'manage {operation}')
+        func = {
+            'create_new_deck': core.create_new_deck,
+            'load_deck': core.load_deck,
+            'save_deck': core.save_deck,
+            'delete_deck': core.delete_deck,
+            'shuffle_deck': core.shuffle_deck,
+            'get_cards': core.get_cards,
+            'get_decks': core.get_decks,
+            'put_from_hand_to_deck': core.put_from_hand_to_deck
+        }[operation]
+        print(f'managed {func}')
+        results.append(func(*argument))
+    return results, errors
 
 async def handle_connection(reader, writer):
     """Callback function on connection. Protocol:
@@ -118,37 +133,48 @@ async def handle_connection(reader, writer):
         results: list any [res1, res2, res3..]   #
               }
     """
+    
     print('start recieving')
-    data = await reader.read(10000)
+    try:
+        data = await asyncio.wait_for(reader.readuntil(b'\\n'), timeout=960)
+    except asyncio.TimeoutError:
+        print('Timeout!')
+        writer.close()
+        raise(asyncio.TimeoutError)
     message = pickle.loads(data)
     print(message)
     user_id = message['context'].get('user_id')
     user_name = message['context'].get('user_name')
+    close_connection = message['close_connection']
     core = Tarot(user_name, user_id)
-    results = []
-    errors = []
     print('start manage operations')
-    for operation, arguments in zip(message['operations'], message['arguments']):
-        print(f'manage {operation}')
-        func = {
-            'create_new_deck': core.create_new_deck,
-            'load_deck': core.load_deck,
-            'save_deck': core.save_deck,
-            'delete_deck': core.delete_deck,
-            'shuffle_deck': core.shuffle_deck,
-            'get_cards': core.get_cards,
-            'get_decks': core.get_decks,
-            'put_from_hand_to_deck': core.put_from_hand_to_deck
-            }[operation]
-        print(f'managed {func}')  
-        results.append(func(*arguments))
-    response ={'errors': errors, 'results': results}
+    results, errors = run_stuff(core, message['operations'], message['arguments'])
+    response = {'errors': errors, 'results': results}
     print(f'response:{response}')
     message = pickle.dumps(response)
-    from pympler import asizeof # test
-    print(asizeof.asizeof(message) )# test
+    from pympler import asizeof  # test
+    print(asizeof.asizeof(message))  # test
     writer.write(message)
+    writer.write(b'\\n')
     await writer.drain()
+    print(close_connection)
+    #long connection
+    while not(close_connection):
+        try:
+            data = await asyncio.wait_for(reader.readuntil(b'\\n'), timeout=960)
+        except asyncio.TimeoutError:
+            print('Timeout!')
+            writer.close()
+            raise(asyncio.TimeoutError)
+        message = pickle.loads(data)
+        print(message)
+        results, errors = run_stuff(core, message['operations'], message['arguments'])
+        response = {'errors': errors, 'results': results}
+        print(f'response:{response}')
+        message = pickle.dumps(response)
+        writer.write(message)
+        writer.write(b'\\n')
+        await writer.drain()
     print("Close the connection")
     writer.close()
 
