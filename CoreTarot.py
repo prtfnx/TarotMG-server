@@ -2,6 +2,8 @@ import asyncio
 import pickle
 from DeckClass import Deck
 from SQLiteClass import SQLite
+HOST = '127.0.0.3'
+PORT = 8888
 """
 Main governing class with API
 For every session make one Tarot object
@@ -40,7 +42,7 @@ class Tarot:
     def sign_user(self, user_name):
         pass
 
-    def create_new_deck(self, deck_name):
+    def create_deck(self, deck_name):
         user_id = self.user_id
         new_deck = Deck(deck_name, user_id)
         new_deck.create()
@@ -95,13 +97,14 @@ class Tarot:
 
         return decks
 
-def run_stuff(core, operation, arguments):
+def run_stuff(core, operations, arguments):
     results = []
     errors = []  # TODO
-    for operation, argument in zip(operation, arguments):
+    for operation, argument in zip(operations, arguments):
         print(f'manage {operation}')
+        print(f'with arg {argument}')
         func = {
-            'create_new_deck': core.create_new_deck,
+            'create_deck': core.create_deck,
             'load_deck': core.load_deck,
             'save_deck': core.save_deck,
             'delete_deck': core.delete_deck,
@@ -181,7 +184,7 @@ async def handle_connection(reader, writer):
 
 async def server():
     server = await asyncio.start_server(
-        handle_connection, '127.0.0.1', 8888)
+        handle_connection, '127.0.0.3', 8888)
     addr = server.sockets[0].getsockname()
     print(f'Serving on {addr}')
     async with server:

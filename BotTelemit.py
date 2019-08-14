@@ -7,32 +7,39 @@ import logging
 import datetime
 import settings
 import ImageProcessing
-
+from ClientBotClass import Client
 # For log
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def form_response(user_name, user_id, ask):
+    client = Client(user_name, user_id)
+    response = client.connection(ask)
+    return response
+
+def form_ask(command, args, ask):
+    if not 'operations' in ask:
+        ask['operations'] = []
+        ask['arguments'] = []
+    ask['operations'].append(command) 
+    ask['arguments'].append(args)
+    return ask
 
 def start_command(update, context):
     text = 'Я люблю телему 93! Люблю печеньки! Люблю посвящения в 11 градус! Для создания колодны введите "/create_deck name" где name - "thoth"'
     context.bot.send_message(chat_id=update.message.chat_id, text=text)
 
-
 def create_deck(update, context):
     user_id = update.message.from_user.id
     user_name = update.message.from_user.name
     deck_name = context.args[0]
-    tarot = CoreTarot.Tarot(user_name, user_id)
-    deck = tarot.create_new_deck(deck_name, user_id)
-    save_deck(tarot, deck)
+    ask = {}
+    ask = form_ask('create_deck', [deck_name], ask)
+    ask = form_ask('save_deck', [], ask)
+    response = form_response(user_name, user_id, ask)
     update.message.reply_text(
         'Создание колодны успешно! Спасибо лично алистеру кравли и его ЖЕЗЛУ. Для того чтобы достать одну карту введите "/one_card name_of_deck" для 4 карт "/set_of_cards name_of_deck')
-
-
-def save_deck(tarot, deck):
-    tarot.save_deck(deck)
-
 
 def load_deck(update, context):
     pass
@@ -55,9 +62,11 @@ def one_card(update, context):
         position = int(context.args[1])
     else:
         position = random.randint(0, 77)
-    tarot = CoreTarot.Tarot(user_name, user_id)
-    deck = tarot.load_deck(deck_name, user_id)
-    card = deck.get_card(position)
+    ask = {}
+    ask = form_ask('load_deck', [deck_name, user_id],ask)
+    ask = form_ask('get_cards', [[position]], ask)
+    response = form_response(user_name, user_id, ask)
+    card = response['results'][1][0]
     text = ' '.join(card.name.split('_'))
     update.message.reply_text(text)
     context.bot.send_photo(chat_id=update.message.chat_id, photo=open(card.path_to_image, 'rb'))
@@ -69,12 +78,13 @@ def set_of_cards(update, context):
     chat_id=update.message.chat_id
     deck_name = context.args[0]
     position = random.sample(range(0, 77), 4)
-    tarot = CoreTarot.Tarot(user_name, user_id)
-    deck = tarot.load_deck(deck_name, user_id)
+    ask = {}
+    ask = form_ask('load_deck', [deck_name, user_id],ask)
+    ask = form_ask('get_cards', [position], ask)
+    response = form_response(user_name, user_id, ask)
     reply = []
     path_list = []
-    for i in range(4):  # form answer
-        card = deck.get_card(position[i]) # take cards
+    for card in response['results'][1]:
         reply.append(' '.join(card.name.split('_'))) # form answer
         path_list.append(card.path_to_image)
     update.message.reply_text(''.join(reply))  #answer

@@ -30,8 +30,9 @@ class Client:
     async def connection(self):
         """Maintain connection with master"""
         reader, writer = await asyncio.open_connection(
-         '127.0.0.1', 8888)
+         '127.0.0.2', 8888)
         print('connected')
+        self.connected = True
         while self.keep_connection:
             print('start waiting for request')
             request = await self.form_request()
@@ -83,7 +84,6 @@ class Client:
 async def test():
     print('1')
     test = Client.get_instance('testname', 232)
-    
     message = {
       'adress': 'to master',
       'operations': ['create_new_deck', 'get_cards'],
@@ -96,7 +96,9 @@ async def test():
     print('taken')
     print(test.data_stream_out)
     print('taking data from stream from main')
-    await asyncio.sleep(10)
+    #await asyncio.sleep(10)
     answer = await test.data_stream_out.get()
     print(answer)
-asyncio.run(test())
+
+if __name__ == '__main___':
+    asyncio.run(test())

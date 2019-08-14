@@ -17,6 +17,7 @@ class Client:
      
     def connection(self, ask):
         """Maintain connection with master"""
+        print(ask)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
             print('connected')
